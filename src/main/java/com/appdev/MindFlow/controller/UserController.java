@@ -105,7 +105,33 @@ public class UserController {
     }
     
     @PostMapping("/user/reset-password")
-    public String resetPassword(@RequestParam("token") String token, @RequestParam("newPassword") String newPassword) {
-        return "redirect:/user/login"; 
+    public String resetPassword(@RequestParam("token") String token, 
+                                @RequestParam("newPassword") String newPassword, 
+                                RedirectAttributes redi) {
+        // Step 1: Find the token in the database
+        Optional<VerificationToken> optionalToken = verificationRepository.findByToken(token);
+
+        // Step 2: Check if the token is valid
+        if (!optionalToken.isPresent() || optionalToken.get().isExpired()) {
+            redi.addFlashAttribute("error", "Invalid or expired token.");
+            return "redirect:/user/login";
+        }
+
+        // Step 3: Get the associated user
+        User user = optionalToken.get().getUser();
+
+        // Step 4: Set the new password
+        user.setPassword(newPassword);
+
+        // Step 5: Save the updated user to the database
+        userService.save(user);
+
+        // Step 6: Delete the used token
+        verificationRepository.delete(optionalToken.get());
+
+        // Step 7: Redirect to login page with a success message
+        redi.addFlashAttribute("message", "Password reset successful! Please log in.");
+        return "redirect:/user/login";
     }
+
 }
