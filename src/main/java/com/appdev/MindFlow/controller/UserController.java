@@ -55,13 +55,20 @@ public class UserController {
         Optional<User> userOpt = userService.findByEmail(email); 
         User user = userOpt.orElse(null);
 
-        if (user != null && user.getPassword().equals(password)) {
-            return "redirect:/journal";
-        } else {
-            redi.addFlashAttribute("error", "Invalid email or password.");
-            return "redirect:/user/login";
+        if (user != null) {
+            // Debugging: Print stored and entered passwords
+            System.out.println("Stored Password: " + user.getPassword());
+            System.out.println("Entered Password: " + password);
+
+            if (user.getPassword().equals(password)) {
+                return "redirect:/journal";
+            }
         }
+
+        redi.addFlashAttribute("error", "Invalid email or password.");
+        return "redirect:/user/login";
     }
+
 
     @GetMapping("/journal")
     public String showJournalPage() {
@@ -82,8 +89,14 @@ public class UserController {
     public String processForgotPassword(@RequestParam("email") String email, Model model) {
         Optional<User> userOpt = userService.findByEmail(email);
         if (userOpt.isPresent()) {
-            // Use the service method that accepts a User object.
-            String message = userService.generatePasswordResetToken(userOpt.get());
+            User user = userOpt.get();
+
+            // Find and delete existing token by user ID
+            Optional<VerificationToken> existingToken = verificationRepository.findByUserId(user.getId());
+            existingToken.ifPresent(verificationRepository::delete);
+
+            // Generate a new password reset token
+            String message = userService.generatePasswordResetToken(user);
             model.addAttribute("message", message);
         } else {
             model.addAttribute("error", "No account found with that email.");
@@ -108,30 +121,50 @@ public class UserController {
     public String resetPassword(@RequestParam("token") String token, 
                                 @RequestParam("newPassword") String newPassword, 
                                 RedirectAttributes redi) {
-        // Step 1: Find the token in the database
         Optional<VerificationToken> optionalToken = verificationRepository.findByToken(token);
 
-        // Step 2: Check if the token is valid
         if (!optionalToken.isPresent() || optionalToken.get().isExpired()) {
             redi.addFlashAttribute("error", "Invalid or expired token.");
             return "redirect:/user/login";
         }
 
-        // Step 3: Get the associated user
+        // Retrieve the user associated with the token
         User user = optionalToken.get().getUser();
 
-        // Step 4: Set the new password
-        user.setPassword(newPassword);
+        // Debugging: Print user details before updating password
+        System.out.println("User found: " + user.getEmail());
+        System.out.println("Old Password: " + user.getPassword());
 
-        // Step 5: Save the updated user to the database
-        userService.save(user);
+        // Fetch the latest user from the database via userService
+        Optional<User> latestUserOpt = userService.findByEmail(user.getEmail());
+        if (!latestUserOpt.isPresent()) {
+            redi.addFlashAttribute("error", "User not found.");
+            return "redirect:/user/login";
+        }
 
-        // Step 6: Delete the used token
+        User latestUser = latestUserOpt.get();
+
+        // Update the password
+        latestUser.setPassword(newPassword);
+        System.out.println("New Password Before Saving: " + newPassword);
+
+        // Save the updated user
+        userService.save(latestUser);
+
+        // Fetch again to confirm password change
+        Optional<User> updatedUser = userService.findByEmail(user.getEmail());
+        if (updatedUser.isPresent()) {
+            System.out.println("Updated Password in DB: " + updatedUser.get().getPassword());
+        } else {
+            System.out.println("User not found after update!");
+        }
+
+        // Delete the used token
         verificationRepository.delete(optionalToken.get());
 
-        // Step 7: Redirect to login page with a success message
         redi.addFlashAttribute("message", "Password reset successful! Please log in.");
         return "redirect:/user/login";
     }
+
 
 }

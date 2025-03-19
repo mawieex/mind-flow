@@ -2,6 +2,7 @@ package com.appdev.MindFlow.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // ✅ Import Transactional
 import com.appdev.MindFlow.model.User;
 import com.appdev.MindFlow.model.VerificationToken;
 import com.appdev.MindFlow.repository.UserRepository;
@@ -40,8 +41,19 @@ public class UserService {
         return "User not found.";
     }
 
-
+    @Transactional // ✅ Ensures password changes are persisted
     public void save(User user) {
-        userRepository.save(user); // ✅ Save user details
+        System.out.println("Saving User: " + user.getEmail());
+        System.out.println("New Password to be Saved: " + user.getPassword());
+
+        userRepository.save(user);
+
+        // Fetch again to confirm password update
+        Optional<User> updatedUser = userRepository.findByEmail(user.getEmail());
+        if (updatedUser.isPresent()) {
+            System.out.println("Updated Password in DB: " + updatedUser.get().getPassword());
+        } else {
+            System.out.println("User not found after update!");
+        }
     }
 }
