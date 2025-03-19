@@ -23,7 +23,7 @@
   
   
   
-  @GetMapping("/user/home") public String home() { return "register"; }
+  @GetMapping("/user/ella") public String home() { return "register"; }
   }
 
 
