@@ -21,9 +21,8 @@
   
   @GetMapping("/user/register") public String register() { return "register"; }
   
-  
-  
-  @GetMapping("/user/ella") public String home() { return "register"; }
   }
+  
+  
 
 

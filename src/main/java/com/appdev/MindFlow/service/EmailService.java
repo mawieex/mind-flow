@@ -16,7 +16,7 @@ public class EmailService {
 
     public void sendPasswordResetEmail(String to, String token) {
         String resetUrl = "http://localhost:8080/user/reset-password?token=" + token;
-        String subject = "Password Reset Request";
+        String subject = "Password Reset Request on MindFlow";
         String body = "You requested a password reset. Click the link below to reset your password:\n\n" +
                       resetUrl + "\n\n" +
                       "If you didn't request this, please ignore this email.";

@@ -11,20 +11,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.appdev.MindFlow.model.User;
 import com.appdev.MindFlow.model.VerificationToken;
 import com.appdev.MindFlow.repository.VerificationTokenRepository;
-import com.appdev.MindFlow.service.EmailService;
 import com.appdev.MindFlow.service.UserService;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Controller
 public class UserController {
     
     @Autowired
     private UserService userService;  
-    
-    @Autowired
-    private EmailService emailService; 
+     
     
     @Autowired
     private VerificationTokenRepository verificationRepository;
