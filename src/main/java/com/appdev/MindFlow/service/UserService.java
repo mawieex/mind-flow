@@ -41,19 +41,19 @@ public class UserService {
         return "User not found.";
     }
 
-    @Transactional // ✅ Ensures password changes are persisted
+    @Transactional
     public void save(User user) {
-        System.out.println("Saving User: " + user.getEmail());
-        System.out.println("New Password to be Saved: " + user.getPassword());
+        System.out.println("🔄 Saving User: " + user.getEmail());
+        System.out.println("🛑 New Password Before Saving: '" + user.getPassword() + "' (Length: " + user.getPassword().length() + ")");
 
-        userRepository.save(user);
+        userRepository.save(user);  
 
-        // Fetch again to confirm password update
+        // 🛑 Fetch the user immediately to verify if it was updated
         Optional<User> updatedUser = userRepository.findByEmail(user.getEmail());
         if (updatedUser.isPresent()) {
-            System.out.println("Updated Password in DB: " + updatedUser.get().getPassword());
+            System.out.println("✅ Password After Save: '" + updatedUser.get().getPassword() + "' (Length: " + updatedUser.get().getPassword().length() + ")");
         } else {
-            System.out.println("User not found after update!");
+            System.out.println("❌ ERROR: User not found after saving!");
         }
     }
 }
