@@ -1,57 +1,69 @@
-body {
-    background-color: #e0e4ed;
-    color: #333;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
+html, body {
+    width: 100%;
+    overflow-x: hidden; /* Prevents horizontal scrolling */
+}
+
+.container-fluid {
+    padding: 0; /* Removes Bootstrap's default padding */
+}
 
 header {
-    background-color: #e0e4ed;
-    color: #333;
-}
-
-
-nav {
-    background-color: #dfe3ed;
-}
-
-
-nav .nav-link {
-    color: #333;
-}
-
-
-nav .nav-link:hover {
-    background-color: #d1e1d4;
-}
-
-
-section {
-    background-color: #f8f9fa;
-    border-radius: 5px;
+    background-color: #A8C3A6;
     padding: 20px;
-    margin-bottom: 20px;
+    width: 100vw; /* Forces the header to span the entire viewport width */
+    max-width: 100%;
+    border-radius: 0;
+    margin: 0;
 }
 
-
-h2 {
+body {
+    background-color: #d1e1d4;
     color: #333;
 }
-
-
-.chart-container {
-    position: relative;
-    height: 40vh;
-    width: 80vw;
-    margin: auto;
+header {
+    background-color: #A8C3A6;
+    padding: 20px;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    margin: 0;
 }
-
-
+nav {
+    background-color: #e0e4ed;
+    padding: 15px;
+    border-radius: 0;
+}
+main {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 0;
+}
 .btn-primary {
-    background-color: #d1e1d4;
-    border: none;
+    background-color: #A8C3A6;
+    border-color: #e7d7c8;
+    color: #333;
 }
-
-
 .btn-primary:hover {
-    background-color: #c0d4c1;
+    background-color: #B8D8BE;
+    border-color: #d1e1d4;
+}
+textarea, select, input {
+    background-color: #dfe3ed;
+    border: 1px solid #d1e1d4;
+}
+.list-group-item {
+    background-color: #ffffff;
+    border-color: #d1e1d4;
+}
+.journal-container {
+    background-color: #d1e1d4;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
 }

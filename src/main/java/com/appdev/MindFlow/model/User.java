@@ -1,20 +1,21 @@
 package com.appdev.MindFlow.model;
 import jakarta.persistence.*;
 @Entity
-@Table(name = "users2")
+@Table(name = "users")
 public class User {
+	
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
-   private Long id; // Changed from Integer to Long
+   
+   private Long id; 
    @Column(nullable = false, unique = true, length = 45)
+   
    private String email;
    @Column(nullable = false, length = 50)
-   private String password;
-   @Column(nullable = false, length = 45)
-   private String username;
    
-   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-   private boolean verified = false;
+   private String password;
+ 
+  
    
    // Getters and Setters
    public Long getId() {
@@ -35,17 +36,8 @@ public class User {
    public void setPassword(String password) {
        this.password = password;
    }
-   public String getUsername() {
-       return username;
-   }
-   public void setUsername(String username) {
-       this.username = username;
-   }
-public boolean isVerified() {
-	return verified;
-}
-public void setVerified(boolean verified) {
-	this.verified = verified;
+  
+
 }
    
-}
+

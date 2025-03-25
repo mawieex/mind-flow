@@ -20,10 +20,10 @@ public class UserController {
     
     @Autowired
     private UserService userService;  
-     
     
     @Autowired
-    private VerificationTokenRepository verificationRepository;
+    private VerificationTokenRepository verificationTokenRepository;
+    
     @GetMapping("/user/new")
     public String showUserPage(Model model) {
         model.addAttribute("user", new User());
@@ -32,15 +32,20 @@ public class UserController {
 
     @PostMapping("/user/save")
     public String saveUserForm(User user, RedirectAttributes redi) {
-        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
-            redi.addFlashAttribute("error", "Username is required!");
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            redi.addFlashAttribute("error", "Email is required!");
             return "redirect:/user/new"; 
         }
-
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            redi.addFlashAttribute("error", "Password is required!");
+            return "redirect:/user/new"; 
+        }
+        
         userService.save(user); 
         redi.addFlashAttribute("message", "Registration successful! Please login.");
         return "redirect:/user/login";
     }
+
 
     @GetMapping("/user/login")
     public String showLoginForm(Model model) {
@@ -55,24 +60,12 @@ public class UserController {
         Optional<User> userOpt = userService.findByEmail(email);
         User user = userOpt.orElse(null);
 
-        if (user != null) {
-            // Debugging: Print stored and entered passwords with lengths
-            System.out.println("Stored Password: '" + user.getPassword() + "' (Length: " + user.getPassword().length() + ")");
-            System.out.println("Entered Password: '" + password + "' (Length: " + password.length() + ")");
-
-            // Ensure correct comparison
-            if (user.getPassword().equals(password)) {
-                System.out.println("✅ Password matched! Redirecting to journal.");
-                return "redirect:/journal";
-            } else {
-                System.out.println("❌ Password mismatch! Stored vs Entered.");
-            }
+        if (user != null && user.getPassword().equals(password)) {
+            return "redirect:/journal";
         }
-
         redi.addFlashAttribute("error", "Invalid email or password.");
         return "redirect:/user/login";
     }
-
 
     @GetMapping("/journal")
     public String showJournalPage() {
@@ -92,14 +85,12 @@ public class UserController {
     @PostMapping("/user/forgot-password")
     public String processForgotPassword(@RequestParam("email") String email, Model model) {
         Optional<User> userOpt = userService.findByEmail(email);
+        
         if (userOpt.isPresent()) {
-            User user = userOpt.get();
-
-            // Find and delete existing token by user ID
-            Optional<VerificationToken> existingToken = verificationRepository.findByUserId(user.getId());
-            existingToken.ifPresent(verificationRepository::delete);
-
-            // Generate a new password reset token
+            User user = userOpt.get();  
+            Optional<VerificationToken> tokenOpt = verificationTokenRepository.findByUser(user);
+            tokenOpt.ifPresent(verificationTokenRepository::delete);
+            
             String message = userService.generatePasswordResetToken(user);
             model.addAttribute("message", message);
         } else {
@@ -110,51 +101,32 @@ public class UserController {
 
     @GetMapping("/user/reset-password")
     public String showResetPage(@RequestParam("token") String token, Model model, RedirectAttributes redi) {
-    	Optional<VerificationToken> optionalToken = verificationRepository.findByToken(token);
-    	if (!optionalToken.isPresent() || optionalToken.get().isExpired()) {
+        Optional<VerificationToken> optionalToken = verificationTokenRepository.findByToken(token);
+        if (!optionalToken.isPresent() || optionalToken.get().isExpired()) {
             redi.addFlashAttribute("error", "Invalid or expired token.");
             return "redirect:/user/login";
         }
-        
         model.addAttribute("token", token);
-
-    	return "reset-password"; 
+        return "reset-password"; 
     }
     
     @PostMapping("/user/reset-password")
     public String resetPassword(@RequestParam("token") String token, 
                                 @RequestParam("newPassword") String newPassword, 
                                 RedirectAttributes redi) {
-        Optional<VerificationToken> optionalToken = verificationRepository.findByToken(token);
+        Optional<VerificationToken> optionalToken = verificationTokenRepository.findByToken(token);
 
         if (!optionalToken.isPresent() || optionalToken.get().isExpired()) {
             redi.addFlashAttribute("error", "Invalid or expired token.");
             return "redirect:/user/login";
         }
-
+        
         User user = optionalToken.get().getUser();
-
-        // 🛑 Debugging: Print old password before update
-        System.out.println("🔍 Found user: " + user.getEmail());
-        System.out.println("🛑 Old Password Before Reset: '" + user.getPassword() + "' (Length: " + user.getPassword().length() + ")");
-
-        // 🛠️ Update and save new password
         user.setPassword(newPassword);
         userService.save(user);  
-
-        // 🛑 Fetch the user again after saving
-        Optional<User> updatedUserOpt = userService.findByEmail(user.getEmail());
-
-        if (updatedUserOpt.isPresent()) {
-            User updatedUser = updatedUserOpt.get();
-            System.out.println("✅ Updated Password in DB: '" + updatedUser.getPassword() + "' (Length: " + updatedUser.getPassword().length() + ")");
-        } else {
-            System.out.println("❌ ERROR: User not found after saving!");
-        }
-
-        verificationRepository.delete(optionalToken.get());
+        
+        verificationTokenRepository.delete(optionalToken.get());
         redi.addFlashAttribute("message", "Password reset successful! Please log in.");
         return "redirect:/user/login";
     }
-
 }
