@@ -71,6 +71,22 @@ public class UserController {
     public String showJournalPage() {
         return "journal";
     }
+  
+     @GetMapping("/insights")
+     public String showInsights() {
+          return "insights";
+    }
+    
+     @GetMapping("/community")
+     public String showCommunity() {
+          return "community";
+    }
+    
+     @GetMapping("/profile")
+     public String showProfile() {
+          return "profile";
+    }
+    
 
     @GetMapping("/reset")
     public String welcome() {
