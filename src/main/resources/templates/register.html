@@ -5,14 +5,16 @@
    <title>Register - MindFlow</title>
    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
    <link rel="stylesheet" th:href="@{/register.css}">
+   <!-- Add SweetAlert2 CSS and JS -->
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
    <div class="container">
        <h2>Create your Account</h2>
-       <form action="/user/save" method="post">
+       <form th:action="@{/user/save}" th:object="${user}" method="post">
    <input type="text" name="firstName" placeholder="First Name" class="input-field" required>
    <input type="text" name="lastName" placeholder="Last Name" class="input-field" required>
-   <input type="text" name="username" placeholder="Username" class="input-field" required>
    <input type="email" name="email" placeholder="Email Address" class="input-field" required>
    <input type="password" name="password" placeholder="Password" class="input-field" required>
    <input type="checkbox" class="checkbox" required> I agree to the Terms and Privacy Policy
@@ -20,5 +22,15 @@
 		</form>
        <a href="/user/login" class="link">Already have an account? Login Here</a>
    </div>
+
+   <!-- Add script for popup messages -->
+   <script th:if="${error}" th:inline="javascript">
+       Swal.fire({
+           title: 'Error!',
+           text: /*[[${error}]]*/ '',
+           icon: 'error',
+           confirmButtonText: 'OK'
+       });
+   </script>
 </body>
 </html>

@@ -9,7 +9,10 @@ public class VerificationToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String token; // No need for @SuppressWarnings
+    private String token; // This field is essential for verification
+    
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @OneToOne
     @JoinColumn(name = "user_id")
@@ -24,13 +27,8 @@ public class VerificationToken {
     public VerificationToken(String token, User user) {
         this.token = token;
         this.user = user;
+        this.email = user.getEmail(); // Set the email from the user
         this.expiryDate = LocalDateTime.now().plusHours(24); // Default to 24 hours
-    }
-
-    public VerificationToken(String token, User user, long hours) {
-        this.token = token;
-        this.user = user;
-        this.expiryDate = LocalDateTime.now().plusHours(hours); // Custom expiration time
     }
 
     public Long getId() {
@@ -40,20 +38,24 @@ public class VerificationToken {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    public String getEmail() {
+        return email;
+    }
 
     public String getToken() {
-        return token;
+        return token; // Getter for token
     }
 
     public void setToken(String token) {
-        this.token = token;
+        this.token = token; // Setter for token
     }
 
-    public User getUser() {
+    public User getUser () {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser (User user) {
         this.user = user;
     }
 

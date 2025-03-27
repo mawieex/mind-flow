@@ -41,11 +41,10 @@ public class UserController {
             return "redirect:/user/new"; 
         }
         
-        userService.save(user); 
-        redi.addFlashAttribute("message", "Registration successful! Please login.");
+        userService.registerUser(user); 
+        redi.addFlashAttribute("message", "Registration successful! Please check your email to verify your account.");
         return "redirect:/user/login";
     }
-
 
     @GetMapping("/user/login")
     public String showLoginForm(Model model) {
@@ -57,13 +56,16 @@ public class UserController {
     public String loginUser(@RequestParam("email") String email, 
                             @RequestParam("password") String password, 
                             RedirectAttributes redi) {
-        Optional<User> userOpt = userService.findByEmail(email);
-        User user = userOpt.orElse(null);
-
-        if (user != null && user.getPassword().equals(password)) {
+        if (userService.authenticateUser(email, password)) {
             return "redirect:/journal";
         }
-        redi.addFlashAttribute("error", "Invalid email or password.");
+        
+        Optional<User> userOpt = userService.findByEmail(email);
+        if (userOpt.isPresent() && !userOpt.get().isEmailVerified()) {
+            redi.addFlashAttribute("error", "Please verify your email before logging in. Check your inbox for the verification link.");
+        } else {
+            redi.addFlashAttribute("error", "Invalid email or password.");
+        }
         return "redirect:/user/login";
     }
 
@@ -130,19 +132,26 @@ public class UserController {
     public String resetPassword(@RequestParam("token") String token, 
                                 @RequestParam("newPassword") String newPassword, 
                                 RedirectAttributes redi) {
-        Optional<VerificationToken> optionalToken = verificationTokenRepository.findByToken(token);
-
-        if (!optionalToken.isPresent() || optionalToken.get().isExpired()) {
-            redi.addFlashAttribute("error", "Invalid or expired token.");
+        String result = userService.resetPassword(token, newPassword);
+        if (result.contains("successfully")) {
+            redi.addFlashAttribute("message", "Password reset successful! Please log in.");
+            return "redirect:/user/login";
+        } else {
+            redi.addFlashAttribute("error", result);
             return "redirect:/user/login";
         }
-        
-        User user = optionalToken.get().getUser();
-        user.setPassword(newPassword);
-        userService.save(user);  
-        
-        verificationTokenRepository.delete(optionalToken.get());
-        redi.addFlashAttribute("message", "Password reset successful! Please log in.");
-        return "redirect:/user/login";
     }
+    
+    @GetMapping("/verify-email")
+    public String verifyEmail(@RequestParam("token") String token, Model model) {
+        String result = userService.verifyEmail(token);
+        if (result.contains("successfully")) {
+            model.addAttribute("message", "Email verified successfully! You can now log in.");
+            return "login";
+        } else {
+            model.addAttribute("error", result);
+            return "login";
+        }
+    }
+    
 }
