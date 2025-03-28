@@ -38,7 +38,7 @@ public class EmailService {
     
     public void sendVerificationEmail(String to, String token) {
         String verificationUrl = "http://localhost:8080/verify-email?token=" + token;
-        String subject = "Verify Your MindFlow Account";
+        String subject = "Verify your MindFlow Account";
         String body = "Welcome to MindFlow!\n\n" +
                      "Please verify your email address by clicking the link below:\n\n" +
                      verificationUrl + "\n\n" +

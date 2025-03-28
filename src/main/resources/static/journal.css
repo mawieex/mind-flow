@@ -30,7 +30,6 @@ header {
     border-radius: 0;
     margin: 0;
     color: var(--text-dark);
-    border-bottom: 4px solid var(--dark-green);
 }
 
 header h1 {
@@ -187,4 +186,5 @@ main {
 .row {
     margin: 0;
     padding: 0;
-} 
+}
+
